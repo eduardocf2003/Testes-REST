@@ -1,7 +1,6 @@
 package br.com.mesttra.person.controller;
 
 import br.com.mesttra.person.entity.Person;
-import br.com.mesttra.person.exceptions.UnsuporttedMathOperationException;
 import br.com.mesttra.person.service.PersonService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
