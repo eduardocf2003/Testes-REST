@@ -1,6 +1,7 @@
 package br.com.mesttra.person.controller;
 
 import br.com.mesttra.person.data.vo.v1.PersonVO;
+import br.com.mesttra.person.data.vo.v2.PersonVOV2;
 import br.com.mesttra.person.service.PersonService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -60,6 +61,15 @@ public class PersonController {
         personService.delete(id);
 
         return ResponseEntity.noContent().build();
+
+    }
+
+    @PostMapping(value = "/v2", consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public PersonVOV2 createV2(@RequestBody PersonVOV2 person) {
+
+
+        return personService.createPersonV2(person);
 
     }
 }

@@ -1,9 +1,11 @@
 package br.com.mesttra.person.service;
 
 import br.com.mesttra.person.data.vo.v1.PersonVO;
+import br.com.mesttra.person.data.vo.v2.PersonVOV2;
 import br.com.mesttra.person.entity.Person;
 import br.com.mesttra.person.exceptions.ResourceNotFoundException;
 import br.com.mesttra.person.mapper.DozerMapper;
+import br.com.mesttra.person.mapper.custom.PersonMapper;
 import br.com.mesttra.person.repository.PersonRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,6 +20,9 @@ public class PersonService {
 
     @Autowired
     PersonRepository personRepository;
+
+    @Autowired
+    PersonMapper mapper;
 
     public List<PersonVO> findAll() {
 
@@ -82,6 +87,19 @@ public class PersonService {
                 .orElseThrow(() -> new ResourceNotFoundException("Sem registro para o id: " + id));
 
         personRepository.delete(entity);
+
+    }
+
+    public PersonVOV2 createPersonV2(PersonVOV2 person) {
+
+        logger.info("Criando uma pessoa com V2!");
+
+        var entity = mapper.convertVOV2ToEntity(person);
+
+        var vo = mapper.convertEntityToVOV2(personRepository.save(entity));
+
+        return vo;
+
 
     }
 
