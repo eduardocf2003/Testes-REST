@@ -1,14 +1,16 @@
 package br.com.mesttra.person.service;
 
+import br.com.mesttra.person.controller.PersonController;
 import br.com.mesttra.person.data.vo.v1.PersonVO;
-import br.com.mesttra.person.data.vo.v2.PersonVOV2;
 import br.com.mesttra.person.entity.Person;
 import br.com.mesttra.person.exceptions.ResourceNotFoundException;
 import br.com.mesttra.person.mapper.DozerMapper;
-import br.com.mesttra.person.mapper.custom.PersonMapper;
 import br.com.mesttra.person.repository.PersonRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+
 
 import java.util.List;
 import java.util.logging.Logger;
@@ -21,15 +23,14 @@ public class PersonService {
     @Autowired
     PersonRepository personRepository;
 
-    @Autowired
-    PersonMapper mapper;
-
     public List<PersonVO> findAll() {
 
         logger.info("Encontrando todas as pessoas!");
 
 
-        return DozerMapper.parseListObjects(personRepository.findAll(), PersonVO.class);
+        var persons = DozerMapper.parseListObjects(personRepository.findAll(), PersonVO.class);
+        persons.stream().forEach(p -> p.add(linkTo(methodOn(PersonController.class).findById(p.getKey())).withSelfRel()));
+        return persons;
 
     }
 
@@ -45,7 +46,9 @@ public class PersonService {
        var entity = personRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Sem registro para o id: " + id));
 
-        return DozerMapper.parseObject(entity, PersonVO.class);
+        var vo = DozerMapper.parseObject(entity, PersonVO.class);
+        vo.add(linkTo(methodOn(PersonController.class).findById(id)).withSelfRel());
+        return vo;
     }
 
 
@@ -57,6 +60,7 @@ public class PersonService {
 
         var vo = DozerMapper.parseObject(personRepository.save(entity), PersonVO.class);
 
+        vo.add(linkTo(methodOn(PersonController.class).findById(vo.getKey())).withSelfRel());
         return vo;
 
 
@@ -66,8 +70,8 @@ public class PersonService {
 
         logger.info("Atualizando uma pessoa!");
 
-        var entity = personRepository.findById(person.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("Sem registro para o id: " + person.getId()));
+        var entity = personRepository.findById(person.getKey())
+                .orElseThrow(() -> new ResourceNotFoundException("Sem registro para o id: " + person.getKey()));
 
         entity.setFirstName(person.getFirstName());
         entity.setLastName(person.getLastName());
@@ -76,6 +80,7 @@ public class PersonService {
 
         var vo = DozerMapper.parseObject(personRepository.save(entity), PersonVO.class);
 
+        vo.add(linkTo(methodOn(PersonController.class).findById(vo.getKey())).withSelfRel());
         return vo;
     }
 
@@ -87,19 +92,6 @@ public class PersonService {
                 .orElseThrow(() -> new ResourceNotFoundException("Sem registro para o id: " + id));
 
         personRepository.delete(entity);
-
-    }
-
-    public PersonVOV2 createPersonV2(PersonVOV2 person) {
-
-        logger.info("Criando uma pessoa com V2!");
-
-        var entity = mapper.convertVOV2ToEntity(person);
-
-        var vo = mapper.convertEntityToVOV2(personRepository.save(entity));
-
-        return vo;
-
 
     }
 
